@@ -1,0 +1,324 @@
+
+
+#include <fstream> 
+#include <iostream>
+#include <cmath>
+#include <string>
+using namespace std;
+
+
+
+#define MAX 1000
+
+ifstream fin;
+
+ofstream fout;
+
+int Distantmin(int, int, int, int);
+
+int Pathmin(int , int , int, int);
+
+void print(int***, int*** , int  , int );
+
+
+int main()
+{	
+		
+	cout<<"input file name?"<<endl;
+	
+	char input[20];
+
+	cin>>input;
+
+	fin.open(input);
+
+	fout.open("output.txt");
+
+
+	
+	int NumberofLight;
+
+	int CurrentPosition;
+
+
+		
+
+
+	
+	fin >> NumberofLight >> CurrentPosition ;
+
+
+	
+	int *LightofPosition = new int[NumberofLight+2];
+
+	int *ConsumePower = new int[NumberofLight+2];
+
+
+	
+	for(int i = 1; i < NumberofLight+1 ; i++)
+
+	{
+
+
+		
+		fin>>LightofPosition[i];
+
+		fin>>ConsumePower [i];
+
+
+		
+	}
+	
+
+	
+	LightofPosition[0] = 0;
+
+	ConsumePower [0] = 0;
+
+	LightofPosition[NumberofLight+1] = 0;
+
+	ConsumePower [NumberofLight+1] = 0;
+
+
+	
+	int *** EE = new int **[NumberofLight+2];
+
+	int*** DD = new int**[NumberofLight+2];
+
+	int*** PP = new int**[NumberofLight+2];
+
+
+	
+	for(int i=0; i<NumberofLight+2; i++)
+
+	{
+
+		EE[i] = new int*[NumberofLight+2];
+
+		DD[i] = new int*[NumberofLight+2];
+
+		PP[i] = new int*[NumberofLight+2];
+
+		for(int j=0; j<NumberofLight+2 ; j++)
+
+		{
+
+			EE[i][j] = new int[2];
+
+			EE[i][j][0] = 0;
+
+			EE[i][j][1] = 0;
+
+			DD[i][j] = new int[2];
+
+			DD[i][j][0] = 0;
+
+			DD[i][j][1] = 0;
+
+			PP[i][j] = new int[2];
+
+			PP[i][j][0] = 0;
+
+			PP[i][j][1] = 0;
+
+		}
+
+	}	
+
+
+	
+	for(int j=1 ; j<NumberofLight+1 ; j++)
+
+	{
+
+		for(int i=j ; i>0 ;i--)
+
+		{
+
+			if( i == j && i == CurrentPosition)
+
+			{
+
+				EE[i][j][0] = 0;
+
+				EE[i][j][1] = 0;
+
+				DD[i][j][0] = 0;
+
+				DD[i][j][1] = 0;
+
+				PP[i][j] = 0;
+
+			}
+
+			else if( i == j && i != CurrentPosition)
+
+			{
+
+				EE[i][j][0] = 1000000000;
+
+				EE[i][j][1] = 1000000000;
+					DD[i][j][0] = 0;
+
+					DD[i][j][1] = 0;
+
+					PP[i][j] = 0;
+
+			}
+
+			else if( i < j)
+
+			{
+
+				EE[i][j][0] = min(EE[i+1][j][0]+(DD[i+1][j][0]+LightofPosition[i+1]-LightofPosition[i])*LightofPosition[i],
+
+					EE[i+1][j][1]+(DD[i+1][j][1]+LightofPosition[j]-LightofPosition[i])*ConsumePower [i]);
+
+				EE[i][j][1] = min(EE[i][j-1][0]+(DD[i][j-1][0]+LightofPosition[j]-LightofPosition[i])*LightofPosition[j],
+
+					EE[i][j-1][1]+(DD[i][j-1][1]+LightofPosition[j]-LightofPosition[j-1])*ConsumePower [j]);
+
+				DD[i][j][0] = Distantmin(EE[i+1][j][0]+(DD[i+1][j][0]+LightofPosition[i+1]-LightofPosition[i])*LightofPosition[i],
+
+					EE[i+1][j][1]+(DD[i+1][j][1]+LightofPosition[j]-LightofPosition[i])*ConsumePower [i],
+
+					DD[i+1][j][0]+LightofPosition[i+1]-LightofPosition[i],DD[i+1][j][1]+LightofPosition[j]-LightofPosition[i]);
+
+				DD[i][j][1] = Distantmin(EE[i][j-1][0]+(DD[i][j-1][0]+LightofPosition[j]-LightofPosition[i])*LightofPosition[j],
+
+					EE[i][j-1][1]+(DD[i][j-1][1]+LightofPosition[j]-LightofPosition[j-1])*LightofPosition[j],
+
+					DD[i][j-1][0]+LightofPosition[j]-LightofPosition[i],DD[i][j-1][1]+LightofPosition[j]-LightofPosition[j-1]);
+
+				PP[i][j][0] = Pathmin(EE[i+1][j][0]+(DD[i+1][j][0]+LightofPosition[i+1]-LightofPosition[i])*ConsumePower [i],
+
+					EE[i+1][j][1]+(DD[i+1][j][1]+LightofPosition[j]-LightofPosition[i])*ConsumePower [i],i+1,j);
+
+				PP[i][j][1] = Pathmin(EE[i][j-1][0]+(DD[i][j-1][0]+LightofPosition[j]-LightofPosition[i])*ConsumePower [j],
+
+					EE[i][j-1][1]+(DD[i][j-1][1]+LightofPosition[j]-LightofPosition[j-1])*ConsumePower [j],i,j-1);
+
+			}
+
+		}	
+
+	}	
+
+
+	
+	if(EE[1][NumberofLight][0] > EE[1][NumberofLight][1])
+	
+	{
+	
+		fout<<EE[1][NumberofLight][1]<<endl;
+
+	}
+
+	else
+
+	{
+
+		fout<<EE[1][NumberofLight][0]<<endl;
+
+	}
+
+
+	
+	print(EE,PP,1,NumberofLight);
+	
+	return 0;
+}
+
+
+
+
+int Distantmin(int a, int b, int c, int d)
+
+{
+
+	if(a==b)
+
+	{
+
+		return min(c,d);
+
+	}
+
+	if(a == min(a,b))
+
+	{
+
+		return c;
+
+	}
+
+	else
+
+	{
+
+		return d;
+
+	}
+
+}
+
+int Pathmin(int a, int b, int c, int d)
+
+{
+
+	if( a == min(a,b))
+
+	{
+
+		return c;
+
+	}
+
+	else
+
+	{
+
+		return d;
+
+	}
+
+}
+
+
+
+void print(int*** EE , int*** PP , int i , int j)
+
+{
+
+	if(i == j)
+
+	{
+
+		fout << i <<endl;
+
+		return ;
+
+	}
+
+	if( EE[i][j][0] < EE[i][j][1])
+
+	{
+
+		print(EE,PP,i+1,j);
+
+		fout<< i <<endl;		
+
+	}
+
+	else
+
+	{
+
+		print(EE,PP,i,j-1);
+
+		fout<< j <<endl;		
+
+	}	
+
+}
+

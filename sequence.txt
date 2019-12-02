@@ -1,0 +1,155 @@
+#include <iostream>
+#include <fstream>
+
+#define MAX 30
+
+using namespace std;
+
+void print_value(int, int, int, int);
+
+int ***A;
+int ***P;
+int *a;
+
+ofstream outFile("output.txt", ios::out);
+
+int main()
+{
+	char* fileName = new char[100];
+
+	int i, j, k, n, u, V;
+	int gap, p, q;
+
+	cout << "input file name? ";
+	cin >> fileName;
+
+	ifstream inFile(fileName, ios::in);
+
+	if(!inFile)
+	{
+		cerr << "This file is not found." << endl;
+		exit(1);
+	}
+
+	inFile >> n;
+	inFile >> V;
+
+	A = new int**[MAX+1];
+	P = new int**[MAX+1];
+
+	a = new int[MAX];
+
+	for(i = 0; i <= MAX+1; i++)
+	{
+		A[i] = new int*[MAX+1];
+		P[i] = new int*[MAX+1];
+	}
+
+	for(i = 0; i <= MAX+1; i++)
+		for(j = 0; j <= MAX+1; j++)
+		{
+			A[i][j] = new int[MAX+1];
+			P[i][j] = new int[MAX+1];
+		}
+
+	i = 1;
+
+	while(!inFile.eof())
+	{
+		inFile >> a[i];
+		i++;
+
+	}
+
+	for(i = 1; i <= n; i++)
+		for(j = 1; j <= n; j++)
+			for(k = 0; k <= 30; k++)
+			{
+				A[i][j][k] = -1;
+
+				if(i == j)
+				{
+					A[i][i][a[i]] = a[i];
+					P[i][i][a[i]] = i;
+				}
+			}
+
+	i = 1, j = 1;
+
+
+	for(gap = 1; gap < n; gap++)
+	{
+	
+		for(i = 1; i <= n - gap; i++)
+		{
+			j = i + gap;
+		
+			for(k = i; k < j; k++)
+			{
+
+				for(p = 0; p <= 30; p++)
+					for(q = 0; q <= 30; q++)
+					{
+						if(A[i][k][p] != -1 && A[k+1][j][q] != -1)
+						{
+							
+							if(p>q)
+							{
+								u = p-q;
+								A[i][j][u] = q;
+								P[i][j][u] = k;
+								 
+							}
+
+							else
+							{
+								u = q-p;
+								A[i][j][u] = p;
+								P[i][j][u] = k;
+							}
+
+						}
+					}
+			}
+							
+		}
+	
+	}
+
+	if(A[1][n][V] == -1)
+		outFile << "0" << endl;
+
+	else
+		print_value(1, n, V, 1);
+
+	inFile.close();
+	outFile.close();
+
+	return 0;
+}
+
+void print_value(int i, int j, int v, int x)
+{
+	
+	int u, k;
+
+	if(i < j)
+	{
+		u = A[i][j][v];
+		k = P[i][j][v];
+
+		if(A[i][k][u] != -1 && A[k+1][j][u+v] != -1)
+		{
+			print_value(i, k, u, x);
+			print_value(k+1, j, u+v, x+1);
+			outFile << x << endl;
+		}
+
+		else
+		{
+			print_value(i , k , u+v, x);
+			print_value(k+1, j, u, x+1);
+			outFile << x << endl;
+		}
+	}
+}

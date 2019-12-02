@@ -1,0 +1,83 @@
+
+#include <iostream>
+#include <fstream>
+#include <ctime>
+
+using namespace std;
+
+void queens(int);
+bool promising(int);
+int n;
+int col[1001];
+
+ofstream outFile("output.txt", ios::out);
+
+int main()
+{
+	char* fileName = new char[30];
+
+	cout << "input file name? ";
+	cin >> fileName;
+			
+	ifstream inFile(fileName, ios::in);
+	
+	if(!inFile)
+	{
+		cerr << "FIle Not Found" << endl;
+		exit(1);
+	}
+
+	inFile >> n;
+	
+	queens(0);
+
+	inFile.close();
+	outFile.close();
+
+	return 0;
+}
+
+void queens(int i)
+{
+	int j;
+	
+	if(promising(i))
+	{
+		if(i == n)
+		{
+			for(j = 1; j <= n; j++)
+			{
+				outFile << col[j];
+
+				if(j != n)
+					outFile << endl;
+			}
+			exit(1);
+		}
+		else
+		{
+			for(j = 1; j <= n; j++)
+			{
+				col[i+1] = j;
+				queens(i+1);
+			}
+		}
+	}
+}
+
+bool promising(int i)
+{
+	int k = 1;
+	bool pm;
+
+	pm = true;
+
+	while(k < i && pm)
+	{
+		if(col[i] == col[k] || abs(col[i]-col[k]) == abs(i-k))
+			pm = false;	
+		k++;
+	}
+
+	return pm;
+}

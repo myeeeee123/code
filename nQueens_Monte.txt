@@ -1,0 +1,131 @@
+
+
+#include <iostream>
+#include <fstream>
+#include <ctime>
+
+#define MAX 1001
+#define BACKNUM 5
+#define MAXCOUNT 500
+
+using namespace std;
+
+void queens(int);
+void random(int);
+bool promising(int);
+
+int col[MAX];
+int n;
+
+ofstream outFile("output.txt", ios::out);
+
+int main()
+{
+	char* fileName = new char[30];
+
+	cout << "input file name? ";
+	cin >> fileName;
+			
+	ifstream inFile(fileName, ios::in);
+	
+	if(!inFile)
+	{
+		cerr << "FIle Not Found" << endl;
+		exit(1);
+	}
+
+	inFile >> n;
+	
+	if(n <= BACKNUM)
+		queens(0);
+
+	else
+	{
+		while(true)
+		{
+			random(n);
+			queens(n-BACKNUM);
+		}
+	}
+
+	inFile.close();
+	outFile.close();
+
+	return 0;
+
+}
+
+void random(int n)
+{
+	int k = 1, count = 0;
+
+	srand(time(0));
+
+	while(k <= n-BACKNUM)
+	{
+		col[k] = (rand() % n) + 1;
+
+		if(promising(k))
+		{
+			k++;
+			count = 0;
+			continue;
+		}
+		else
+		{
+			count++;
+
+			if(count == MAXCOUNT)
+				k = 1;
+		}
+	}
+
+}
+
+void queens(int i)
+{
+	int j;
+	
+	if(promising(i))
+	{
+		if(i == n)
+		{
+			for(j = 1; j <= n; j++)
+			{
+				outFile << col[j];
+
+				if(j != n)
+					outFile << endl;
+			}
+			exit(1);
+		}
+		else
+		{
+			for(j = 1; j <= n; j++)
+			{
+				col[i+1] = j;
+				queens(i+1);
+			}
+		}
+	}
+
+}
+
+bool promising(int i)
+{
+	int k = 1;
+	bool pm;
+
+	pm = true;
+
+	while(k < i && pm)
+	{
+		if(col[i] == col[k] || abs(col[i]-col[k]) == abs(i-k))
+			pm = false;
+			
+		k++;
+
+	}
+
+	return pm;
+}

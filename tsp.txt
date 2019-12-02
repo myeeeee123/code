@@ -1,0 +1,297 @@
+
+
+#include <iostream>
+#include <fstream>
+#include <cmath>
+
+using namespace std;
+
+int **input;
+int *opttour;
+int n;
+
+class Node
+{
+public:
+	int bound;
+	int level;
+	int *flag;
+	int *path;
+};
+
+class PriorityQ
+{
+public:
+	PriorityQ();
+	bool isEmpty();
+	void insert(Node);
+	Node remove();
+	int nItem;
+		
+private:
+	Node *queue;
+};
+
+PriorityQ::PriorityQ()
+{
+	queue = new Node[300000];
+	nItem = 0;
+}
+
+bool PriorityQ::isEmpty()
+{
+	return (nItem == 0);
+}
+
+void PriorityQ::insert(Node x)
+{
+	int j;
+
+	if(nItem == 0)
+		queue[++nItem] = x;
+
+	else
+	{
+		for(j = nItem; j >= 1; j--)
+		{
+			if(x.bound > queue[j].bound)
+				queue[j+1] = queue[j];
+
+			else 
+				break;
+		}
+
+		queue[j+1] = x;
+		nItem++;
+	}
+
+}
+
+Node PriorityQ::remove()
+{
+	return queue[nItem--];
+}
+
+void traveling();
+int bound(PriorityQ, Node);
+
+// input data
+int main()
+{
+	int i, j;
+
+	char* fileName = new char[30];
+
+	cout << "input file name? ";
+	cin >> fileName;
+
+	ifstream inFile(fileName, ios::in);
+	ofstream outFile("output.txt", ios::out);
+	
+	if(!inFile)
+	{
+		cerr << "FIle Not Found" << endl;
+		exit(1);
+	}
+
+	inFile >> n;
+
+	input = new int*[n+1];
+
+	for( i = 0; i <= n; i++ )
+		input[i] = new int[n+1];
+
+	opttour = new int[n+1];
+
+	while(!inFile.eof())
+	{
+		for(i = 1; i <= n; i++)
+			for(j = 1; j <= n; j++)
+				inFile >> input[i][j];
+
+	}
+	traveling();
+
+	for(i = 1; i <= n+1; i++)		
+	{
+		outFile << opttour[i];
+		
+		if(i != n+1)
+			outFile << endl;
+
+	}
+
+	inFile.close();
+	outFile.close();
+
+	return 0;
+}
+
+// find traveling path
+void traveling()
+{
+	PriorityQ pq;
+	int i, j, minLength = 9000;
+	Node v;
+	Node *u;
+
+	u = new Node[n+1];
+
+	v.path = new int[n+1];
+	v.flag = new int[n+1];	
+
+	for(i = 1; i <= n; i++)
+	{
+		v.flag[i] = 0;
+		v.path[i] = 0;
+	}
+	
+	v.level = 0;
+	
+	v.path[1] = 1;
+	v.flag[1] = 1;
+	
+	v.bound = bound(pq, v);
+
+	pq.insert(v);
+
+	while(!pq.isEmpty())
+	{
+		v = pq.remove();
+
+		if(v.bound < minLength)
+		{
+			u = new Node[n - v.level + 1];				
+
+			for(i = 0; i < n - (v.level+1); i++)
+			{
+				u[i].path = new int[n+1];
+				u[i].flag = new int[n+1];
+				u[i].path[1] = 1;
+				u[i].level = v.level+1;
+			
+				for( int j = 1; j <= n; j++ )
+					u[i].flag[j] = v.flag[j];
+
+			}
+
+			if(u[0].level == n-1)
+			{
+				for(i = 1; i <= n-1; i++ )
+					u[0].path[i] = v.path[i];
+
+				for(i = 1; i <= n; i++ )
+				{
+					if( u[0].flag[i] == 0 )
+					{
+						u[0].path[n] = i;
+						break;
+					}
+				}
+
+				u[0].path[n+1] = 1;
+
+				if(v.bound < minLength)
+				{
+					minLength = v.bound;
+					for( int j = 1; j <= n+1; j++ )
+						opttour[j] = u[0].path[j];
+				}
+			}
+
+			else
+			{
+				int k = 0;
+
+				for(i = 2; i <= n; i++)
+				{
+					if(v.flag[i] == 0)
+					{
+						for(j = 1; j < n; j++)
+							u[k].path[j] = v.path[j];
+
+						u[k].path[ u[k].level+1 ] = i;
+						u[k].bound = bound(pq, u[k]);
+						u[k].flag[i] = 1;
+
+						if(u[k].bound < minLength)
+							pq.insert(u[k]);
+
+						k++;
+					}
+				}
+			}
+		}
+	}
+}
+
+int bound(PriorityQ pq, Node v)
+{
+	int i, j, remain = 0, minLeng = 9000;
+	int *row = new int[n+1];
+	int *col = new int[n+1];
+
+	for(i = 1; i <= n; i++)
+	{
+		row[i] = 0;
+		col[i] = 0;
+	}
+
+	int length = 0;
+
+	int tempRow, tempCol;
+
+	for(i = 1; i <= v.level; i++)
+		row[v.path[i]] = 1;
+
+	for(i = 1; i <= v.level; i++)
+		col[v.path[i+1]] = 1;
+
+	tempRow = v.path[ v.level + 1];
+	tempCol = v.path[1];
+
+	for(i = 1; i <= v.level; i++)
+	{	
+		length += input[v.path[i]][v.path[i+1]];
+	}
+
+	remain = length;
+
+	for(i = 1; i <= n; i++)
+	{
+		minLeng = 9000;
+
+		if( row[i] == 1 )
+			continue;
+
+		else
+		{
+			for(j = 1; j <= n; j++)
+			{
+				if(col[j] == 1)
+					continue;
+
+				else 
+				{
+					if(i == tempRow && j == tempCol)
+						continue;
+
+					else
+					{
+						if(i == j)
+							continue;
+
+						else
+						{
+							if(input[i][j] < minLeng)
+								minLeng = input[i][j];
+						}
+					}
+				}
+			}
+			remain += minLeng;
+		}
+	}
+	
+	return remain;
+}

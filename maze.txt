@@ -1,0 +1,368 @@
+#include <iostream>
+#include <fstream>
+
+using namespace std;
+
+ifstream fin;
+ofstream fout;
+void print(char** , int , int);
+int main()
+{
+	
+
+	cout<<"input file name?"<<endl;
+
+	char input[20];
+
+	cin>>input;
+
+	fin.open(input);
+
+	fout.open("output.txt");
+
+
+	
+	int arraySize;
+	
+	char** Path;
+	
+	
+	int** Number;
+	
+	char** maze;
+
+
+	
+	
+	fin>>arraySize;
+
+	maze = new char*[arraySize];
+	
+	for(int i=0;i<arraySize;i++)
+	
+	{
+	
+		
+		maze[i] = new char[arraySize];
+		
+		fin>>maze[i];
+	
+	}
+
+
+
+	
+	Path = new char*[arraySize];
+	
+	Number = new int*[arraySize];
+	
+
+	
+
+	
+	for(int i=0 ; i<arraySize ;i++)
+	
+	{
+	
+		Path[i] = new char[arraySize];
+
+
+		Number[i] = new int[arraySize];
+
+		for(int j=0 ; j<arraySize ; j++)
+
+		{
+
+
+			Number[i][j] = 99999999;
+
+			Path[i][j] = 'X';
+
+		}
+
+	}
+
+
+	
+	Number[0][0] = 0;
+	
+	int min_L = 99999999;
+	
+	int up = 0;
+	
+	int left = 0;
+	
+
+	
+	while(1)
+	
+	{
+	
+		if(Number[arraySize-1][arraySize-1] < 99999999)
+
+		{
+
+			break;
+
+		}
+
+
+		
+		min_L = 99999999;
+
+
+		
+		for(int i=0 ; i<arraySize ; i++)
+		
+		{
+		
+			for(int j=0 ; j<arraySize ; j++)
+
+			{
+
+				if(Number[i][j] != -1 && min_L > Number[i][j])
+
+				{
+
+					min_L = Number[i][j];
+
+					up = i;
+
+					left = j;
+
+				}
+
+			}
+
+		}		
+
+
+		
+		if(up-1 >= 0 && Number[up-1][left] != -1)
+		
+		{	
+		
+			if(maze[up-1][left] == '0')
+
+			{
+
+				if(Number[up-1][left] > Number[up][left] + 1)
+
+				{
+
+					Number[up-1][left] = Number[up][left] + 1;
+
+					Path[up-1][left] = 'D';
+
+				}
+
+			}
+
+			else
+
+			{
+
+				if(Number[up-1][left] > Number[up][left])
+
+				{
+
+					Number[up-1][left] = Number[up][left];
+
+					Path[up-1][left] = 'D';
+
+				}
+
+			}
+
+		}
+
+
+		
+		if(up+1 < arraySize && Number[up+1][left] != -1)
+		
+		{	
+		
+			if(maze[up+1][left] == '0')
+
+			{
+
+				if(Number[up+1][left] > Number[up][left] + 1)
+
+				{
+
+					Number[up+1][left] = Number[up][left] + 1;
+
+					Path[up+1][left] = 'U';
+
+				}
+
+			}
+
+			else
+
+			{
+
+				if(Number[up+1][left] > Number[up][left])
+
+				{
+
+					Number[up+1][left] = Number[up][left];
+
+					Path[up+1][left] = 'U';
+
+				}
+
+			}
+
+		}
+
+
+		
+		if(left-1 >= 0 && Number[up][left-1] != -1)
+		
+		{	
+		
+			if(maze[up][left-1] == '0')
+
+			{
+
+				if(Number[up][left-1] > Number[up][left] + 1)
+
+				{
+
+					Number[up][left-1] = Number[up][left] + 1;
+
+					Path[up][left-1] = 'R';
+
+				}
+
+			}
+
+			else
+
+			{
+
+				if(Number[up][left-1] > Number[up][left])
+
+				{
+					Number[up][left-1] = Number[up][left];
+
+					Path[up][left-1] = 'R';
+
+				}
+
+			}
+
+		}
+
+
+		
+		if(left+1 < arraySize && Number[up][left+1] != -1)
+		
+		{	
+		
+			if(maze[up][left+1] == '0')
+
+			{
+
+				if(Number[up][left+1] > Number[up][left] + 1)
+
+				{
+
+					Number[up][left+1] = Number[up][left] + 1;
+
+					Path[up][left+1] = 'L';
+
+				}
+
+			}
+
+			else
+
+			{
+
+				if(Number[up][left+1] > Number[up][left])
+
+				{
+
+					Number[up][left+1] = Number[up][left];
+
+					Path[up][left+1] = 'L';
+
+				}
+
+			}
+
+		}		
+
+		Number[up][left] = -1;
+
+
+	}
+
+	
+
+	
+	fout<<Number[arraySize-1][arraySize-1]<<endl;
+	
+	print(Path,arraySize-1,arraySize-1);
+}
+
+
+void print(char** Path , int i , int j)
+
+{
+
+	if(i==0 && j==0)
+
+	{
+
+		fout<<i+1<<" "<<j+1<<endl;
+
+		return;
+
+	}
+
+	else
+
+	{
+	
+		if(Path[i][j] == 'L')
+
+		{
+
+			print(Path,i,j-1);
+
+		}
+
+		if(Path[i][j] == 'R')
+
+		{
+
+
+			print(Path,i,j+1);
+
+		}
+
+		if(Path[i][j] == 'U')
+
+
+		{
+
+			print(Path,i-1,j);
+
+		}
+
+		if(Path[i][j] == 'D')
+
+		{
+
+			print(Path,i+1,j);
+
+		}
+
+		fout<<i+1<<" "<<j+1<<endl;
+
+	}
+
+}
